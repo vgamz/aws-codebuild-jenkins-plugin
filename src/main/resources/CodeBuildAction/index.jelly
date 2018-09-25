@@ -148,6 +148,12 @@
                 if("${it.cloudWatchLogsURL}" != "") {
                     document.write('<h2><a href="${it.cloudWatchLogsURL}" target="_blank">CloudWatch Logs</a></h2>');
                 }
+
+                if("${it.s3LogsURL}" == "") {
+                  if("${it.cloudWatchLogsURL}" == "") {
+                    document.write('<br />');
+                  }
+                }
             </script>
             <table class="pane bigtable stripped-odd">
                 <tbody>
