@@ -18,6 +18,7 @@ import com.amazonaws.codebuild.jenkinsplugin.CodeBuildBaseCredentials;
 import com.amazonaws.services.codebuild.AWSCodeBuildClient;
 import com.amazonaws.services.codebuild.model.*;
 import com.amazonaws.services.codebuild.model.Build;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.cloudbees.plugins.credentials.Credentials;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -41,6 +42,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -91,6 +93,7 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
     @Getter private String cloudWatchLogsGroupNameOverride;
     @Getter private String cloudWatchLogsStreamNameOverride;
     @Getter private String s3LogsStatusOverride;
+    @Getter private String s3LogsEncryptionDisabledOverride;
     @Getter private String s3LogsLocationOverride;
     @Getter private String serviceRoleOverride;
     @Getter private String privilegedModeOverride;
@@ -105,6 +108,8 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
 
     @Getter private final CodeBuildResult codeBuildResult;
     @Getter private String exceptionFailureMode;
+    @Getter private String downloadArtifacts;
+    @Getter private String downloadArtifactsRelativePath;
     private EnvVars envVars;
 
     @Getter@Setter String artifactLocation;
@@ -138,8 +143,8 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
                        String envVariables, String envParameters, String buildSpecFile, String buildTimeoutOverride, String sourceTypeOverride,
                        String sourceLocationOverride, String environmentTypeOverride, String imageOverride, String computeTypeOverride,
                        String cacheTypeOverride, String cacheLocationOverride, String cloudWatchLogsStatusOverride, String cloudWatchLogsGroupNameOverride, String cloudWatchLogsStreamNameOverride,
-                       String s3LogsStatusOverride, String s3LogsLocationOverride, String certificateOverride, String serviceRoleOverride,
-                       String insecureSslOverride, String privilegedModeOverride, String cwlStreamingDisabled, String exceptionFailureMode) {
+                       String s3LogsStatusOverride, String s3LogsEncryptionDisabledOverride,  String s3LogsLocationOverride, String certificateOverride, String serviceRoleOverride,
+                       String insecureSslOverride, String privilegedModeOverride, String cwlStreamingDisabled, String exceptionFailureMode, String downloadArtifacts, String downloadArtifactsRelativePath) {
 
         this.credentialsType = sanitize(credentialsType);
         this.credentialsId = sanitize(credentialsId);
@@ -179,6 +184,7 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         this.cloudWatchLogsGroupNameOverride = sanitize(cloudWatchLogsGroupNameOverride);
         this.cloudWatchLogsStreamNameOverride = sanitize(cloudWatchLogsStreamNameOverride);
         this.s3LogsStatusOverride = sanitize(s3LogsStatusOverride);
+        this.s3LogsEncryptionDisabledOverride = sanitize(s3LogsEncryptionDisabledOverride);
         this.s3LogsLocationOverride = sanitize(s3LogsLocationOverride);
         this.certificateOverride = sanitize(certificateOverride);
         this.serviceRoleOverride = sanitize(serviceRoleOverride);
@@ -190,6 +196,8 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         this.privilegedModeOverride = sanitize(privilegedModeOverride);
         this.cwlStreamingDisabled = sanitize(cwlStreamingDisabled);
         this.exceptionFailureMode = sanitize(exceptionFailureMode);
+        this.downloadArtifacts = sanitize(downloadArtifacts);
+        this.downloadArtifactsRelativePath = sanitize(downloadArtifactsRelativePath);
         this.codeBuildResult = new CodeBuildResult();
         this.batchGetBuildsCalls = 0;
     }
@@ -232,6 +240,7 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         cloudWatchLogsGroupNameOverride = sanitize(cloudWatchLogsGroupNameOverride);
         cloudWatchLogsStreamNameOverride = sanitize(cloudWatchLogsStreamNameOverride);
         s3LogsStatusOverride = sanitize(s3LogsStatusOverride);
+        s3LogsEncryptionDisabledOverride = sanitize(s3LogsEncryptionDisabledOverride);
         s3LogsLocationOverride = sanitize(s3LogsLocationOverride);
         certificateOverride = sanitize(certificateOverride);
         serviceRoleOverride = sanitize(serviceRoleOverride);
@@ -243,6 +252,8 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         privilegedModeOverride = sanitize(privilegedModeOverride);
         cwlStreamingDisabled = sanitize(cwlStreamingDisabled);
         exceptionFailureMode = sanitize(exceptionFailureMode);
+        downloadArtifacts = sanitize(downloadArtifacts);
+        downloadArtifactsRelativePath = sanitize(downloadArtifactsRelativePath);
         return this;
     }
 
@@ -561,6 +572,10 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         codeBuildResult.setArtifactsLocation(currentBuild.getArtifacts() != null ? currentBuild.getArtifacts().getLocation() : null);
 
         if(currentBuild.getBuildStatus().equals(StatusType.SUCCEEDED.toString().toUpperCase(Locale.ENGLISH))) {
+            // Download build artifacts
+            if(downloadArtifacts.equalsIgnoreCase(Boolean.TRUE.toString())) {
+                downloadArtifactsFromS3(listener, awsClientFactory.getS3Client(), currentBuild, this.getArtifactRoot(ws));
+            }
             action.setJenkinsBuildSucceeds(true);
             this.codeBuildResult.setSuccess();
             build.setResult(Result.SUCCESS);
@@ -569,6 +584,21 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
             failBuild(build, listener, "Build " + currentBuild.getId() + " failed", action.getPhaseErrorMessage());
         }
         return;
+    }
+
+    private void downloadArtifactsFromS3(@Nonnull TaskListener listener, AmazonS3Client s3Client, Build build, String artifactRoot) {
+        try {
+            S3Downloader s3Downloader = new S3Downloader(s3Client);
+            s3Downloader.downloadBuildArtifacts(listener, build, artifactRoot);
+        } catch (Exception e)
+        {
+            LoggingHelper.log(listener, e.getMessage());
+        }
+    }
+
+    public String getArtifactRoot(FilePath ws) {
+        StringBuilder destinationPath = new StringBuilder(ws.getRemote());
+        return destinationPath.append(File.separatorChar).append(this.downloadArtifactsRelativePath).toString();
     }
 
     private int getSleepTime(DescriptorImpl desc) {
@@ -737,6 +767,9 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         if(!s3LogsStatusOverride.isEmpty()) {
             message.append("\n\t> s3 logs status: " + getParameterized(s3LogsStatusOverride));
         }
+        if(!s3LogsEncryptionDisabledOverride.isEmpty()) {
+            message.append("\n\t> s3 logs encryption disabled: " + getParameterized(s3LogsEncryptionDisabledOverride));
+        }
         if(!s3LogsLocationOverride.isEmpty()) {
             message.append("\n\t> s3 logs location: " + getParameterized(s3LogsLocationOverride));
         }
@@ -766,6 +799,12 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
         }
         if(!exceptionFailureMode.isEmpty()) {
             message.append("\n\t> exception failure mode status: " + getParameterized(exceptionFailureMode));
+        }
+        if(!downloadArtifacts.isEmpty()) {
+            message.append("\n\t> Download build artifacts: " + getParameterized(downloadArtifacts));
+        }
+        if(!downloadArtifactsRelativePath.isEmpty()) {
+            message.append("\n\t> Download build artifacts relative path: " + getParameterized(downloadArtifactsRelativePath));
         }
         if(!buildSpecFile.isEmpty()) {
             message.append("\n\t> build spec: \n" + getParameterized(buildSpecFile));
@@ -859,6 +898,10 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
 
         if(!getParameterized(s3LogsStatusOverride).isEmpty()) {
             s3LogsConfig.setStatus(getParameterized(s3LogsStatusOverride));
+            overridesS3LogsSpecified = true;
+        }
+        if(!getParameterized(s3LogsEncryptionDisabledOverride).isEmpty()) {
+            s3LogsConfig.setEncryptionDisabled(Boolean.parseBoolean(getParameterized(s3LogsEncryptionDisabledOverride)));
             overridesS3LogsSpecified = true;
         }
         if(!getParameterized(s3LogsLocationOverride).isEmpty()) {
@@ -962,6 +1005,10 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
 
     public String credentialsTypeEquals(String given) {
         return String.valueOf((credentialsType != null) && (credentialsType.equals(given)));
+    }
+
+    public String downloadArtifactsEquals(String given) {
+        return String.valueOf((downloadArtifacts != null) && (downloadArtifacts.equalsIgnoreCase(given)));
     }
 
     public static String decodeJSON(String json) {
@@ -1171,6 +1218,15 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
             return selections;
         }
 
+        public ListBoxModel doFillS3LogsEncryptionDisabledOverrideItems() {
+            final ListBoxModel selections = new ListBoxModel();
+
+            for(BooleanValue t : BooleanValue.values()) {
+                selections.add(t.toString());
+            }
+            return selections;
+        }
+
         public ListBoxModel doFillEnvironmentTypeOverrideItems() {
             final ListBoxModel selections = new ListBoxModel();
 
@@ -1287,6 +1343,31 @@ public class CodeBuilder extends Builder implements SimpleBuildStep {
 
             return FormValidation.ok();
         }
+
+        public FormValidation doCheckS3LogsEncryptionDisabledOverride(@QueryParameter String s3LogsEncryptionDisabledOverride, @QueryParameter String s3LogsStatusOverride) {
+            if (s3LogsStatusOverride == null || s3LogsStatusOverride.isEmpty()) {
+                if (s3LogsEncryptionDisabledOverride != null && !s3LogsEncryptionDisabledOverride.isEmpty()) {
+                    return FormValidation.error("'S3 Logs Status Override' value must be provided");
+                }
+            }
+
+            return FormValidation.ok();
+        }
+
+        public FormValidation doCheckS3LogsLocationOverride(@QueryParameter String s3LogsLocationOverride, @QueryParameter String s3LogsStatusOverride) {
+            if (!LogsConfigStatusType.ENABLED.toString().equals(s3LogsStatusOverride)) {
+                if (s3LogsLocationOverride != null && !s3LogsLocationOverride.isEmpty()) {
+                    return FormValidation.error("'S3 Logs Location Override' must be null if 'S3 Logs Status Override' is 'DISABLED' or empty");
+                }
+            } else {
+                if (s3LogsLocationOverride == null || s3LogsLocationOverride.isEmpty()) {
+                    return FormValidation.error("'S3 Logs Location Override' must be provided if 'S3 Logs Status Override' is 'ENABLED'");
+                }
+            }
+
+            return FormValidation.ok();
+        }
+
 
         public boolean isApplicable(Class<? extends AbstractProject> aClass) {
             // Indicates that this builder can be used with all kinds of project types

@@ -50,7 +50,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
         CodeBuilder test = new CodeBuilder(null, null, null, null, null, null, null, null, null, null, null, null,
                                            null, null, null, null, null, null, null, null, null, null, null, null,
                                            null, null, null, null, null, null, null, null, null, null, null, null,
-                                           null, null, null, null, null, null, null, null, null, null, null, null, null);
+                                           null, null, null, null, null, null, "", null, null, null,
+                                            null, null, null, null, null, null);
 
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
@@ -67,7 +68,7 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
     public void testConfigAllBlank() throws Exception {
         CodeBuilder test = new CodeBuilder("", "", "", "", "", null, "", "", "", "", "", "", "", "", "", "", "", "",
                                            "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                                           "", "", "", "", "", "", "", "", "", "", "", "");
+                                           "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
@@ -86,7 +87,7 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 null, "", "us-east-1", "", "", "",
                 SourceControlType.ProjectSource.toString(), "", "", "", "", "", "", "",
                 "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                "", "", "", "", "", "", "", "", "", "", "", "");
+                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
@@ -107,7 +108,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
         CodeBuilder test = new CodeBuilder("keys", "", "", "", "",
                 null, "", "us-east-1", "project", "", "", "",
                 "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
+                "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+                "", "", "", "", "");
 
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
@@ -183,8 +185,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "[{k, p}]", "buildspec.yml", "5", SourceType.GITHUB_ENTERPRISE.toString(), "https://1.0.0.0.86/my_repo",
                 EnvironmentType.LINUX_CONTAINER.toString(), "aws/codebuild/openjdk-8", "invalidComputeType", CacheType.NO_CACHE.toString(), "",
-                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "", "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
 
@@ -204,8 +206,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "[{k, p}]", "buildspec.yml", "5", SourceType.GITHUB_ENTERPRISE.toString(), "https://1.0.0.0.86/my_repo",
                 EnvironmentType.LINUX_CONTAINER.toString(), "aws/codebuild/openjdk-8", ComputeType.BUILD_GENERAL1_SMALL.toString(), "invalidCacheType", "",
-                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "",  "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
 
@@ -225,8 +227,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "[{k, p}]", "buildspec.yml", "5", SourceType.GITHUB_ENTERPRISE.toString(), "https://1.0.0.0.86/my_repo",
                 EnvironmentType.LINUX_CONTAINER.toString(), "aws/codebuild/openjdk-8", ComputeType.BUILD_GENERAL1_SMALL.toString(), CacheType.NO_CACHE.toString(), "",
-                "invalidCloudWatchLogsStatus", "group", "stream", LogsConfigStatusType.ENABLED.toString(), "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                "invalidCloudWatchLogsStatus", "group", "stream", LogsConfigStatusType.ENABLED.toString(), "",  "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
 
@@ -246,8 +248,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "[{k, p}]", "buildspec.yml", "5", SourceType.GITHUB_ENTERPRISE.toString(), "https://1.0.0.0.86/my_repo",
                 EnvironmentType.LINUX_CONTAINER.toString(), "aws/codebuild/openjdk-8", ComputeType.BUILD_GENERAL1_SMALL.toString(), CacheType.NO_CACHE.toString(), "",
-                LogsConfigStatusType.ENABLED.toString(), "group", "stream", "invalidS3LogsStatus", "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                LogsConfigStatusType.ENABLED.toString(), "group", "stream", "invalidS3LogsStatus", "", "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
 
@@ -267,8 +269,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "[{k, p}]", "buildspec.yml", "5", "invalidSourceType", "https://1.0.0.0.86/my_repo",
                 EnvironmentType.LINUX_CONTAINER.toString(), "aws/codebuild/openjdk-8", ComputeType.BUILD_GENERAL1_SMALL.toString(), CacheType.NO_CACHE.toString(), "",
-                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "", "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
 
@@ -288,8 +290,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "[{k, p}]", "buildspec.yml", "5", SourceType.GITHUB_ENTERPRISE.toString(), "https://1.0.0.0.86/my_repo",
                 "invalidEnvironmentType", "aws/codebuild/openjdk-8", ComputeType.BUILD_GENERAL1_SMALL.toString(), CacheType.NO_CACHE.toString(), "",
-                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "",  "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
         ArgumentCaptor<Result> savedResult = ArgumentCaptor.forClass(Result.class);
         test.perform(build, ws, launcher, listener, mockStepContext);
 
@@ -313,8 +315,8 @@ public class CodeBuilderPerformTest extends CodeBuilderTest {
                 "", "", ArtifactsType.NO_ARTIFACTS.toString(), "", "", "", "", "", BooleanValue.False.toString(), BooleanValue.False.toString(), "",
                 "[{k, v}]", "", "buildspec.yml", "5", SourceType.GITHUB_ENTERPRISE.toString(), "https://1.0.0.0.86/my_repo",
                 EnvironmentType.LINUX_CONTAINER.toString(), "aws/codebuild/openjdk-8", ComputeType.BUILD_GENERAL1_SMALL.toString(), CacheType.NO_CACHE.toString(), "",
-                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "location",
-                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "");
+                LogsConfigStatusType.ENABLED.toString(), "group", "stream", LogsConfigStatusType.ENABLED.toString(), "",  "location",
+                "arn:aws:s3:::my_bucket/certificate.pem", "my_service_role", BooleanValue.False.toString(), BooleanValue.False.toString(), BooleanValue.False.toString(), "", "DISABLED", "");
 
         cb.perform(build, ws, launcher, listener, mockStepContext);
 

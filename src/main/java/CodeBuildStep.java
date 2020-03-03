@@ -82,6 +82,7 @@ public class CodeBuildStep extends AbstractStepImpl {
     @Getter private String cloudWatchLogsGroupNameOverride;
     @Getter private String cloudWatchLogsStreamNameOverride;
     @Getter private String s3LogsStatusOverride;
+    @Getter private String s3LogsEncryptionDisabledOverride;
     @Getter private String s3LogsLocationOverride;
     @Getter private String serviceRoleOverride;
     @Getter private String privilegedModeOverride;
@@ -94,6 +95,8 @@ public class CodeBuildStep extends AbstractStepImpl {
     @Getter private String buildTimeoutOverride;
     @Getter private String cwlStreamingDisabled;
     @Getter private String exceptionFailureMode;
+    @Getter private String downloadArtifacts;
+    @Getter private String downloadArtifactsRelativePath;
 
     @DataBoundSetter
     public void setCredentialsType(String credentialsType) {
@@ -281,6 +284,11 @@ public class CodeBuildStep extends AbstractStepImpl {
     }
 
     @DataBoundSetter
+    public void setS3LogsEncryptionDisabledOverrideOverride(String s3LogsEncryptionDisabledOverride) {
+        this.s3LogsEncryptionDisabledOverride = s3LogsEncryptionDisabledOverride;
+    }
+
+    @DataBoundSetter
     public void setS3LogsLocationOverride(String s3LogsLocationOverride) {
         this.s3LogsLocationOverride = s3LogsLocationOverride;
     }
@@ -338,6 +346,16 @@ public class CodeBuildStep extends AbstractStepImpl {
     @DataBoundSetter
     public void setExceptionFailureMode(String exceptionFailureMode) {
         this.exceptionFailureMode = exceptionFailureMode;
+    }
+
+    @DataBoundSetter
+    public void setDownloadArtifacts(String downloadArtifacts) {
+        this.downloadArtifacts = downloadArtifacts;
+    }
+
+    @DataBoundSetter
+    public void setDownloadArtifactsRelativePath(String downloadArtifactsRelativePath) {
+        this.downloadArtifactsRelativePath = downloadArtifactsRelativePath;
     }
 
     @Extension
@@ -499,6 +517,15 @@ public class CodeBuildStep extends AbstractStepImpl {
             return selections;
         }
 
+        public ListBoxModel doFillS3LogsEncryptionDisabledOverrideItems() {
+            final ListBoxModel selections = new ListBoxModel();
+
+            for(BooleanValue t : BooleanValue.values()) {
+                selections.add(t.toString());
+            }
+            return selections;
+        }
+
         public ListBoxModel doFillEnvironmentTypeOverrideItems() {
             final ListBoxModel selections = new ListBoxModel();
 
@@ -572,7 +599,6 @@ public class CodeBuildStep extends AbstractStepImpl {
             selections.add("");
             return selections;
         }
-
     }
 
     public static final class CodeBuildExecution extends AbstractSynchronousNonBlockingStepExecution<CodeBuildResult> {
@@ -609,8 +635,9 @@ public class CodeBuildStep extends AbstractStepImpl {
                     step.getSourceTypeOverride(), step.getSourceLocationOverride(), step.getEnvironmentTypeOverride(),
                     step.getImageOverride(), step.getComputeTypeOverride(), step.getCacheTypeOverride(), step.getCacheLocationOverride(),
                     step.getCloudWatchLogsStatusOverride(), step.getCloudWatchLogsGroupNameOverride(), step.getCloudWatchLogsStreamNameOverride(),
-                    step.getS3LogsStatusOverride(), step.getS3LogsLocationOverride(), step.getCertificateOverride(), step.getServiceRoleOverride(),
-                    step.getInsecureSslOverride(), step.getPrivilegedModeOverride(), step.getCwlStreamingDisabled(), step.getExceptionFailureMode()
+                    step.getS3LogsStatusOverride(), step.getS3LogsEncryptionDisabledOverride(), step.getS3LogsLocationOverride(), step.getCertificateOverride(), step.getServiceRoleOverride(),
+                    step.getInsecureSslOverride(), step.getPrivilegedModeOverride(), step.getCwlStreamingDisabled(), step.getExceptionFailureMode(),
+                    step.getDownloadArtifacts(), step.getDownloadArtifactsRelativePath()
             ).readResolve();
 
             try {
